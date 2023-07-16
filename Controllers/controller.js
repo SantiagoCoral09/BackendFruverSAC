@@ -14,6 +14,21 @@ const getProductos = async (req, res) => {//Todos los productos disponibles
         res.status(400).json({ mensaje: error });
     }
 };
+const getProductosByCategoria = async (req, res) => {
+    try {
+        const { categoria } = req.params; // Obtener la categoría desde los parámetros de la solicitud
+        const productos = await Producto.findAll({
+            where: {
+                categoria: categoria // Filtrar por la categoría especificada
+            }
+        });
+        res.status(200).json(productos);
+    } catch (error) {
+        console.error(error);
+        res.status(400).json({ mensaje: error });
+    }
+};
+
 const getProducto = async (req, res) => {//Buscar un producto por su id
     const { idProducto } = req.params;
     try {
@@ -171,7 +186,7 @@ const getAllProductosCarrito = async (req, res) => {//Todos los productos de un 
             where: { CarritoId: idCarrito },
             include: {
                 model: Producto, // Nombre del modelo de Producto
-                attributes: ['nombre','precio','cantidad_producto','descripcion','categoria','imagen'], // Incluye los atributos del Producto
+                attributes: ['nombre', 'precio', 'cantidad_producto', 'descripcion', 'categoria', 'imagen'], // Incluye los atributos del Producto
             },
         });
         res.status(200).json(productos_carrito);
@@ -183,10 +198,23 @@ const getAllProductosCarrito = async (req, res) => {//Todos los productos de un 
 const getProductoCarrito = async (req, res) => {//Un solo producto de un carrito por su idProductoCarrito
     const { idProductoCarrito } = req.params;
     try {
-        const producto_carrito = await ProductoCarrito.findAll({
+        const producto_carrito = await ProductoCarrito.findOne({
             where: { idProductoCarrito: idProductoCarrito }
         });
         res.status(200).json(producto_carrito);
+    } catch (error) {
+        console.error(error);
+        res.status(400).json({ mensaje: error });
+    }
+};
+
+const getProductoCarritoProduct = async (req, res) => {//Un solo producto de un carrito por su idProducto
+    const { ProductoId } = req.params;
+    try {
+        const producto = await ProductoCarrito.findOne({
+            where: { ProductoId: ProductoId }
+        });
+        res.status(200).json(producto);
     } catch (error) {
         console.error(error);
         res.status(400).json({ mensaje: error });
@@ -205,11 +233,11 @@ const postProductoCarrito = async (req, res) => {//Agregar un producto al carrit
 }
 const putProductoCarrito = async (req, res) => {//Actualizar un producto de un carrito si cambia la cantidad
     const { idProductoCarrito } = req.params;
-    const { idCarrito, idProducto, cantidad, valor_parcial } = req.body;
+    const { CarritoId, ProductoId, cantidad, valor_parcial } = req.body;
     try {
         const oldProductoCarrito = await ProductoCarrito.findByPk(idProductoCarrito);
-        oldProductoCarrito.CarritoId = idCarrito;
-        oldProductoCarrito.ProductoId = idProducto;
+        oldProductoCarrito.CarritoId = CarritoId;
+        oldProductoCarrito.ProductoId = ProductoId;
         oldProductoCarrito.cantidad = cantidad;
         oldProductoCarrito.valor_parcial = valor_parcial;
 
@@ -260,9 +288,14 @@ const deleteProductoCarrito = async (req, res) => {//Eliminar un producto del ca
 
 // C O M P R A S
 
-const getAllCompras = async (req, res) => {//Todas las compras de todos los usuarios
+const getAllCompras = async (req, res) => {
     try {
-        const compras = await Compra.findAll();
+        const compras = await Compra.findAll({
+            include: {
+                model: Carrito, // Especifica el modelo Carrito
+                attributes: ['idCarrito', 'valor_total', 'idUsuario', 'fechaCreacion'] // Especifica los atributos que deseas incluir
+            }
+        });
         res.status(200).json(compras);
     } catch (error) {
         console.error(error);
@@ -270,12 +303,46 @@ const getAllCompras = async (req, res) => {//Todas las compras de todos los usua
     }
 };
 
-const getComprasByCorreo = async (req, res) => {//Todas las compras registradas con un correo
+
+// const getComprasByCorreo = async (req, res) => {
+//     const { correo } = req.params;
+//     try {
+//         const compras = await Compra.findAll({
+//             include: {
+//                 model: Carrito,
+//                 attributes: ['idCarrito', 'valor_total', 'idUsuario', 'fechaCreacion'],
+//             },
+//             where: {
+//                 correo: correo, // Condición de filtro para el correo
+//             },
+//         });
+//         res.status(200).json(compras);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(400).json({ mensaje: error });
+//     }
+// };
+const getComprasByCorreo = async (req, res) => {
     const { correo } = req.params;
     try {
         const compras = await Compra.findAll({
-            where: { correo: correo }
+            include: {
+                model: Carrito,
+                attributes: ['valor_total'],
+                include: {
+                    model: ProductoCarrito,
+                    attributes: ['cantidad', 'valor_parcial'],
+                    include: {
+                        model: Producto,
+                        attributes: ['idProducto', 'nombre', 'precio', 'cantidad_producto', 'descripcion', 'categoria', 'imagen'],
+                    },
+                },
+            },
+            where: {
+                correo: correo, // Condición de filtro para el correo
+            },
         });
+
         res.status(200).json(compras);
     } catch (error) {
         console.error(error);
@@ -283,18 +350,52 @@ const getComprasByCorreo = async (req, res) => {//Todas las compras registradas 
     }
 };
 
-const getComprasById = async (req, res) => {//Todas las compras registradas con un idCompra
+
+// const getComprasById = async (req, res) => {//Todas las compras registradas con un idCompra
+//     const { idCompra } = req.params;
+//     try {
+//         const compras = await Compra.findAll({
+//             where: { idCompra: idCompra },
+//             include: {
+//                 model: Carrito, // Nombre del modelo de Producto
+//                 attributes: ['idCarrito','idUsuario','valor_total','fechaCreacion'], // Incluye los atributos del Producto
+
+//             },
+//         });
+//         res.status(200).json(compras);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(400).json({ mensaje: error });
+//     }
+// };
+const getComprasById = async (req, res) => {
     const { idCompra } = req.params;
     try {
         const compras = await Compra.findAll({
-            where: { idCompra: idCompra }
+            include: {
+                model: Carrito,
+                attributes: ['valor_total'],
+                include: {
+                    model: ProductoCarrito,
+                    attributes: ['cantidad', 'valor_parcial'],
+                    include: {
+                        model: Producto,
+                        attributes: ['idProducto', 'nombre', 'precio', 'cantidad_producto', 'descripcion', 'categoria', 'imagen'],
+                    },
+                },
+            },
+            where: {
+                idCompra: idCompra,
+            },
         });
+
         res.status(200).json(compras);
     } catch (error) {
         console.error(error);
         res.status(400).json({ mensaje: error });
     }
 };
+
 
 const postCompra = async (req, res) => {//Agregar una compra
     const { idCarritoCompra, nombres, correo, direccion, metodo_pago } = req.body;
@@ -339,6 +440,7 @@ const deleteCompra = async (req, res) => {//Eliminar una compra por su idCompra
 
 export {
     getProductos,
+    getProductosByCategoria,
     getProducto,
     postProductos,
     putProductos,
@@ -352,6 +454,7 @@ export {
     getAllProductosAllCarritos,
     getAllProductosCarrito,
     getProductoCarrito,
+    getProductoCarritoProduct,
     postProductoCarrito,
     putProductoCarrito,
     deleteAllProductosCarrito,

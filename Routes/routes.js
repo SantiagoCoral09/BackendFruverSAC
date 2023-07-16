@@ -3,6 +3,7 @@ import { Router } from 'express';
 // const {getProductos, postProductos, putProductos, deleteProductos}=require('../Controllers/controller');
 import {
     getProductos,
+    getProductosByCategoria,
     getProducto,
     postProductos,
     putProductos,
@@ -13,19 +14,20 @@ import {
     postCarrito,
     putCarrito,
     deleteCarrito,
+    getAllProductosAllCarritos,
     getAllProductosCarrito,
+    getProductoCarrito,
+    getProductoCarritoProduct,
     postProductoCarrito,
     putProductoCarrito,
+    deleteAllProductosCarrito,
     deleteProductoCarrito,
     getAllCompras,
     getComprasByCorreo,
     getComprasById,
     postCompra,
     putCompra,
-    deleteCompra,
-    getAllProductosAllCarritos,
-    getProductoCarrito,
-    deleteAllProductosCarrito
+    deleteCompra
 } from '../Controllers/controller.js';
 
 const router = Router();
@@ -35,6 +37,7 @@ router.get("/", (req, res) => {
     res.send("GET Pagina Principal Express");
 });
 router.get("/productos", getProductos);
+router.get("/productos_cat/:categoria", getProductosByCategoria);
 router.get("/productos/:idProducto", getProducto);
 router.post("/productos", postProductos);
 router.put("/productos/:idProducto", putProductos);
@@ -50,6 +53,8 @@ router.delete("/carrito/:idCarrito", deleteCarrito);
 router.get("/all_productos_carritos", getAllProductosAllCarritos);//Solo si es necesario
 router.get("/all_productos_carrito/:idCarrito", getAllProductosCarrito);
 router.get("/producto_carrito/:idProductoCarrito", getProductoCarrito);
+router.get("/producto_carritoProduct/:ProductoId", getProductoCarritoProduct);
+
 router.post("/productos_carrito/:idCarrito", postProductoCarrito);////Verificar...***
 router.put("/producto_carrito/:idProductoCarrito", putProductoCarrito);
 router.delete("/all_productos_carrito/:idCarrito", deleteAllProductosCarrito);

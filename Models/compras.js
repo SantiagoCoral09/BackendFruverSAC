@@ -14,7 +14,10 @@ const Compra = sequelize.define('compras', {
   idCarritoCompra: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    foreignKey: 'idCarrito'
+    references: {
+      model:Carrito,
+      key:'idCarrito'
+    }
   },
   // identificacion: {
   //   type: DataTypes.STRING
@@ -40,8 +43,8 @@ const Compra = sequelize.define('compras', {
   timestamps: false,
 });
 
-// `sequelize.define` also returns the model
-// console.log(Producto === sequelize.models.Producto); // true
+Carrito.hasOne(Compra, { foreignKey: 'idCarritoCompra' });
+Compra.belongsTo(Carrito, { foreignKey: 'idCarritoCompra' });
 
 export{
     Compra

@@ -8,7 +8,8 @@ const Carrito = sequelize.define('carritos', {
     type: DataTypes.INTEGER,
     allowNull: false,
     primaryKey: true,
-    autoIncrement: true
+    autoIncrement: true,
+    
   },
   idUsuario: {
     type: DataTypes.STRING,
@@ -26,8 +27,7 @@ const Carrito = sequelize.define('carritos', {
   timestamps: false,
 });
 
-// `sequelize.define` also returns the model
-// console.log(Producto === sequelize.models.Producto); // true
+
 
 export{
     Carrito
