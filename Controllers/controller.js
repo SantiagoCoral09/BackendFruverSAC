@@ -126,7 +126,7 @@ const getCarritoById = async (req, res) => {///Obtener el carrito de un usuario 
     }
 };
 
-const postCarrito = async (req, res) => {//Agregar un carrito (al hacerlo debemos guardar su id)
+const postCarrito = async (req, res) => {//Agregar un carrito
     const { idUsuario, valor_total } = req.body;
     try {
         const newCarrito = await Carrito.create({ idUsuario: idUsuario, valor_total: valor_total });

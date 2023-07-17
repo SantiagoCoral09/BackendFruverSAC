@@ -8,3 +8,5 @@ const sequelize = new Sequelize("fruver_sac", "root", "", {
 export {
     sequelize
 };
+
+
